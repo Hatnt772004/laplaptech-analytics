@@ -81,14 +81,14 @@ laplaptech-analytics/
 
 | Giai đoạn | Nội dung | Thời gian thực tế |
 |---|---|---|
-| 0 | Chuẩn bị kỹ thuật, ERD | *(điền số ngày thực tế)* |
-| 1 | Bối cảnh kinh doanh, hypotheses | *(điền)* |
-| 2 | Làm sạch dữ liệu, Data Quality Audit | *(điền)* |
-| 3 | EDA, kiểm định thống kê | *(điền)* |
-| 4 | Đúc kết insight & đề xuất | *(điền)* |
-| 5 | Dashboard | *(điền, đang thực hiện)* |
-| 6 | Documentation & Deliverable | *(điền)* |
-| **Tổng** | | *(điền)* |
+| 0 | Chuẩn bị kỹ thuật, ERD | 3 ngày |
+| 1 | Bối cảnh kinh doanh, hypotheses | 2 ngày |
+| 2 | Làm sạch dữ liệu, Data Quality Audit | 3 ngày |
+| 3 | EDA, kiểm định thống kê | 2 ngày |
+| 4 | Đúc kết insight & đề xuất | 1 ngày |
+| 5 | Dashboard | 3 ngày |
+| 6 | Documentation & Deliverable | 1 ngày |
+| **Tổng** | | 15 ngày |
 
 ## Reproducibility
 
