@@ -1,0 +1,27 @@
+# Environment & secrets
+.env
+*.env.local
+
+# Data (không commit dữ liệu thô/cache — quá nặng, có thể tái tạo từ pipeline)
+data/raw/*.csv
+data/processed/*.csv
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Power BI cache/lock files
+*.pbix.lock
+~$*.pbix
+
+# OS
+.DS_Store
+Thumbs.db
