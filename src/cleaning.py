@@ -143,8 +143,6 @@ def find_key_inconsistencies(df_inventory: pd.DataFrame) -> pd.DataFrame:
             })
     return pd.DataFrame(issues)
 
-# THAY THẾ toàn bộ đoạn CONTAMINATED_DEVICE_IDS cũ trong src/cleaning.py bằng hàm sau:
-
 def detect_contaminated_devices(df_laptop: pd.DataFrame,
                                   name_col: str = "name",
                                   weight_col: str = "laptop_weight",
@@ -152,18 +150,14 @@ def detect_contaminated_devices(df_laptop: pd.DataFrame,
                                   min_weight_g: float = 700,
                                   max_weight_g: float = 6000) -> list:
     """
-    Phát hiện các dòng KHÔNG phải laptop thật trong laptop_model, dùng 2 quy tắc độc lập:
-    (1) tên gọi chứa từ khóa nghi ngờ (iPhone/iPad/dòng test...)
-    (2) trọng lượng (sau khi chuẩn hóa đơn vị) nằm ngoài khoảng vật lý hợp lý của laptop.
-
-    Chạy lại MỖI LẦN gọi (không hardcode danh sách ID), để tự thích ứng khi dữ liệu
-    (bảng nguồn ClickHouse) được cập nhật thêm dòng mới — dataset này là dữ liệu SỐNG,
-    không phải snapshot tĩnh. Xem docs/project_notes.md để biết lịch sử các lần audit.
+    Phát hiện các dòng không phải laptop trong laptop_model, dùng 2 quy tắc độc lập:
+    (1) tên gọi chứa từ khóa iPhone/iPad/dòng test...
+    (2) trọng lượng nằm ngoài khoảng hợp lý của laptop.
     """
-    suspect_keywords = ["iphone", "ipad", "phone", "tablet", "test", "thử", "dummy", "mới test"]
-    pattern = "|".join(suspect_keywords)
+    pattern = (r"\b(?:iphone|ipad|tablet|test|dummy)\b|\bphone\b"
+           r"|galaxy\s+(?:s\d|z\b|a\d|tab|note)|thử|mới test")
     suspects_by_name = df_laptop[
-        df_laptop[name_col].str.lower().str.contains(pattern, na=False)
+        df_laptop[name_col].str.lower().str.contains(pattern, na=False, regex=True)
     ][id_col].tolist()
 
     weight_g = normalize_laptop_weight(df_laptop, weight_col=weight_col)
@@ -191,3 +185,27 @@ def normalize_laptop_weight(df: pd.DataFrame, weight_col: str = "laptop_weight")
     raw = pd.to_numeric(df[weight_col], errors="coerce")
     mask_kg = raw < 10
     return raw.where(~mask_kg, raw * 1000)
+
+
+# ── Giai đoạn 3/5 — Chuẩn hóa cột output cuối cùng (tránh rò rỉ cột thô từ SELECT *) ──
+REPORT_CORE_COLUMNS = [
+    "id", "name", "brand_id", "cpu_model_id", "gpu_model_id",
+    "is_gaming_laptop", "is_workstation", "year_introduce",
+    "battery_capacity_whr", "laptop_weight_g", "cpu_tdp_parsed", "gpu_tdp_parsed",
+    "battery_density", "office_battery_result_minutes", "office_battery_per_whr",
+    "cpu_battery_ratio", "pageview_count", "compare_count", "interest_score",
+]
+
+def select_report_columns(df: pd.DataFrame, extra_cols: list = None) -> pd.DataFrame:
+    """
+    Chọn lọc cột chuẩn cho các file output cuối cùng (dùng cho Power BI/báo cáo),
+    loại bỏ cột nghiệp vụ thô từ SELECT * (created_on, cpu_note, thumbnail_image_url...)
+    và cột trùng do merge (laptop_model_id_x/_y). Chỉ giữ cột có thật trong df để tránh lỗi
+    KeyError nếu một số cột phái sinh chưa được tính ở bước gọi hàm.
+    """
+    cols = REPORT_CORE_COLUMNS + (extra_cols or [])
+    cols_present = [c for c in cols if c in df.columns]
+    missing = set(cols) - set(cols_present)
+    if missing:
+        print(f"[select_report_columns] Cảnh báo: các cột sau không có trong df, đã bỏ qua: {missing}")
+    return df[cols_present].copy()

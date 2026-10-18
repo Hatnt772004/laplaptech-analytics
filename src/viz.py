@@ -23,11 +23,14 @@ def plot_group_boxplot(df, group_col: str, value_col: str, title: str, filename:
     plt.close(fig)
 
 
-def plot_quadrant_scatter(df, x_col: str, y_col: str, label_col: str, title: str, filename: str):
+def plot_quadrant_scatter(df, x_col: str, y_col: str, label_col: str, title: str, filename: str, x_lines=None, y_lines=None):
     fig, ax = plt.subplots(figsize=(7, 5))
     sns.scatterplot(data=df, x=x_col, y=y_col, hue=label_col, ax=ax, alpha=0.7)
-    ax.axvline(df[x_col].median(), color="gray", linestyle="--", linewidth=0.8)
-    ax.axhline(df[y_col].median(), color="gray", linestyle="--", linewidth=0.8)
+    for v in (x_lines if x_lines is not None else [df[x_col].median()]):
+        ax.axvline(v, color="gray", linestyle="--", linewidth=0.8)
+    for v in (y_lines if y_lines is not None else [df[y_col].median()]):
+        ax.axhline(v, color="gray", linestyle="--", linewidth=0.8)
+    ax.legend(title=None, fontsize=8)
     ax.set_title(title)
     save_fig(fig, filename)
     plt.show()

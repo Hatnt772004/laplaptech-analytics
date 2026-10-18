@@ -1,7 +1,7 @@
 # Insight Summary — LapLap Tech Analytics
 
 *Nguồn: dataset thực chiến LapLap Tech (ClickHouse). Toàn bộ phân tích dùng population đã làm
-sạch (135/159 laptop, đã loại thiết bị không phải laptop và chuẩn hóa đơn vị). Chi tiết phương
+sạch (133/159 laptop, đã loại thiết bị không phải laptop và chuẩn hóa đơn vị). Chi tiết phương
 pháp đầy đủ: xem docs/project_notes.md.*
 
 ## Về dữ liệu hành vi người dùng
@@ -15,7 +15,7 @@ tổng hợp (aggregate) theo laptop_model_id.
 ## Insight 1 — Ultrabook mỏng nhẹ đang chiếm ưu thế về mật độ pin; gaming là ngoại lệ hiếm
 
 **Pattern:** Laptop gaming có mật độ pin (dung lượng Whr / trọng lượng) thấp hơn rõ rệt so với
-laptop văn phòng (kiểm định Mann-Whitney, p ≈ 10⁻⁷, effect size lớn r = 0.566). Trong 135 laptop,
+laptop văn phòng (kiểm định Mann-Whitney, p ≈ 4×10⁻⁸, effect size lớn r = 0.586). Trong 133 laptop,
 có **24 model** đạt "Golden Ratio" — vừa nằm trong nhóm nhẹ nhất vừa có mật độ pin cao nhất.
 Gần như toàn bộ là ultrabook văn phòng (Zenbook, Vivobook S, Swift, ThinkPad X1 Carbon, LG gram...);
 ngoại lệ duy nhất là **Asus ROG Flow Z13** — laptop gaming dạng tablet 2-in-1.
@@ -38,7 +38,7 @@ trung vào nhóm 24 model — cần đo thực tế sau khi triển khai để x
 
 **Giới hạn/Rủi ro:**
 - Mật độ pin đo dung lượng *danh định* (Whr/trọng lượng), KHÔNG phải hiệu năng pin thực tế khi
-  sử dụng — do `office_battery_result_minutes` chỉ có 1/135 dòng dữ liệu, không đủ để tính chỉ
+  sử dụng — do `office_battery_result_minutes` chỉ 1/133 laptop sạch có dữ liệu, không đủ để tính chỉ
   số hiệu năng thực tế (đã pivot công thức, xem chi tiết trong project_notes.md).
 - Kết luận là mối liên hệ mô tả (descriptive), không phải quan hệ nhân quả.
 
@@ -48,8 +48,8 @@ trung vào nhóm 24 model — cần đo thực tế sau khi triển khai để x
 
 **Pattern:** Trái với giả thuyết ban đầu ("gaming được quan tâm/so sánh nhiều hơn"), dữ liệu
 cho thấy **điều ngược lại**: mức độ quan tâm (đo bằng lượt xem chi tiết + lượt chọn so sánh)
-của laptop văn phòng cao hơn gaming (trung vị 977.5 so với 638.0), khác biệt có ý nghĩa thống
-kê (p = 0.024). Đã kiểm tra và loại trừ khả năng do laptop mới ra mắt được xem nhiều hơn (năm
+của laptop văn phòng cao hơn gaming (trung vị 990 so với 643), khác biệt có ý nghĩa thống
+kê (p = 0.011). Đã kiểm tra và loại trừ khả năng do laptop mới ra mắt được xem nhiều hơn (năm
 ra mắt trung bình giữa 2 nhóm gần như không lệch: 2024.6 vs 2024.5).
 
 ![Interest Score: Gaming vs Văn phòng](figures/h5_interest_score_boxplot.png)
@@ -66,7 +66,7 @@ quan tâm thực tế (ước tính dịch chuyển 10% vị trí ưu tiên từ
 lượt click vào trang chi tiết — cần A/B test thực tế để xác nhận, đây chỉ là ước tính định hướng.
 
 **Giới hạn/Rủi ro:**
-- Effect size ở mức trung bình (r = 0.236), không phải khác biệt cực lớn — không nên diễn giải
+- Effect size ở mức trung bình (r = 0.267), không phải khác biệt cực lớn — không nên diễn giải
   quá mức thành "người dùng hoàn toàn không quan tâm gaming".
 - `interest_score'` là chỉ số ước lượng (containment với dữ liệu đối chiếu ~78%), không phải
   phép đo tuyệt đối chính xác.

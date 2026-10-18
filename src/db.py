@@ -3,8 +3,12 @@ import hashlib
 import pandas as pd
 import clickhouse_connect
 from dotenv import load_dotenv
+import re
+from pathlib import Path
+
 
 load_dotenv()
+ROOT = Path(__file__).resolve().parents[1]
 
 def get_client():
     return clickhouse_connect.get_client(
@@ -15,7 +19,7 @@ def get_client():
         database=os.getenv("CH_DATABASE"),
     )
 
-def query_cached(sql: str, cache_dir: str = "data/raw", force_refresh: bool = False) -> pd.DataFrame:
+def query_cached(sql: str, cache_dir: str = str(ROOT / "data" / "raw"), force_refresh: bool = False) -> pd.DataFrame:
     """Chạy query, cache kết quả ra CSV theo hash của câu SQL để tránh query lại DB mỗi lần chạy notebook."""
     os.makedirs(cache_dir, exist_ok=True)
     key = hashlib.md5(sql.encode()).hexdigest()[:10]
@@ -29,7 +33,7 @@ def query_cached(sql: str, cache_dir: str = "data/raw", force_refresh: bool = Fa
     df.to_csv(path, index=False)
     return df
 
-def get_schema(database: str = "laplaptech", cache_dir: str = "../data/raw") -> pd.DataFrame:
+def get_schema(database: str = "laplaptech", cache_dir: str = str(ROOT / "data" / "raw")) -> pd.DataFrame:
     sql = f"""
         SELECT table, name AS column_name, type AS data_type
         FROM system.columns
@@ -39,8 +43,19 @@ def get_schema(database: str = "laplaptech", cache_dir: str = "../data/raw") -> 
     """
     return query_cached(sql, cache_dir=cache_dir)
 
-def append_note(text: str, path: str = "../docs/project_notes.md") -> None:
+def append_note(text: str, path: str = str(ROOT / "docs" / "project_notes.md")) -> None:
     """Ghi thêm 1 đoạn note vào project_notes.md. Dùng chung cho mọi notebook,
-    tránh lặp lại boilerplate 'with open(...) as f: f.write(...)' ở từng cell."""
+    tránh lặp lại boilerplate 'with open(...) as f: f.write(...)' ở từng cell.
+    Idempotent: nếu đoạn note (nguyên văn) đã có trong file, bỏ qua, tránh ghi
+    trùng mỗi lần notebook được chạy lại. Nếu nội dung note THAY ĐỔI (do dữ liệu
+    nguồn là dữ liệu sống, ví dụ số lượng thiết bị nhiễm đổi sau khi sửa
+    detect_contaminated_devices), đoạn note mới vẫn được ghi thêm như một mốc
+    lịch sử mới — đúng tinh thần 'xem project_notes.md để biết lịch sử các lần audit'."""
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            existing = f.read()
+        if re.sub(r"\s+", " ", text).strip() in re.sub(r"\s+", " ", existing):
+            return
     with open(path, "a", encoding="utf-8") as f:
         f.write(text)
+

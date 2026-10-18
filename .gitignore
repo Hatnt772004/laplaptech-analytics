@@ -1,6 +1,8 @@
 # Environment & secrets
 .env
 *.env.local
+.env.* 
+!.env.example
 
 # Data (không commit dữ liệu thô/cache — quá nặng, có thể tái tạo từ pipeline)
 data/raw/*.csv
@@ -25,3 +27,6 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+reports/executed_notebooks/ 
+notebooks/data/
